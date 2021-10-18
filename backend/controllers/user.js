@@ -2,31 +2,34 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const CryptoJS = require('crypto-js');
-const AES = require("crypto-js/aes");
 const hmac = require('crypto-js/hmac-sha256');
-
+const emailRegex = /^(?=.+[a-zA-Z])(?=.+[0-9]).{8,}[^&"()!$*€£`+=;?#\/]$/g;
 const key = "tokenMail";
 
 exports.signup = (req, res, next) => {
-    let encrypted = CryptoJS.SHA256(req.body.email, key).toString();
-    bcrypt.hash(req.body.password, 10)
-        .then(hash => {
+    if (emailRegex.test(req.body.password)) {
+        let encrypted = CryptoJS.SHA256(req.body.email, key).toString();
+        bcrypt.hash(req.body.password, 10)
+            .then(hash => {
 
-            const user = new User({
-                email: encrypted,
-                password: hash
-            });
-            user.save()
-                .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
-                .catch(error => res.status(400).json({ error }));
-        })
-        .catch(error => res.status(500).json({ error }));
+                const user = new User({
+                    email: encrypted,
+                    password: hash
+                });
+                user.save()
+                    .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
+                    .catch(error => res.status(400).json({ error: 'L\'utilisateur n\'a pu être créé !' }));
+            })
+            .catch(error => res.status(500).json({ error: 'Impossible d\'enregister un utilisateur!' }));
+    } else {
+        return res.status(400).json({ 'error': 'Mot de passe doit contenir au moins 1 minuscule, 1 majuscule, 1 chiffre et contenir au minimum 8 caractères !' });
+    }
 };
 
 exports.login = (req, res, next) => {
 
     let encrypted = CryptoJS.SHA256(req.body.email, key).toString();
-    User.findOne({ email: encrypted }) //req.body.email })
+    User.findOne({ email: encrypted })
 
     .then(user => {
 

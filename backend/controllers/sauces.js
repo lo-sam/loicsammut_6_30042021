@@ -14,7 +14,7 @@ exports.createSauce = (req, res, next) => {
     });
     sauce.save()
         .then(() => res.status(201).json({ message: 'Objet enregistré !' }))
-        .catch(error => res.status(400).json({ error }));
+        .catch(error => res.status(400).json({ error: 'Objet non enregristré !' }));
 };
 
 exports.modifySauce = (req, res, next) => {
@@ -29,13 +29,13 @@ exports.modifySauce = (req, res, next) => {
                 fs.unlink(`images/${filename}`, () => {
                     Sauce.updateOne({ _id: req.params.id }, {...sauceObject, _id: req.params.id })
                         .then(() => res.status(200).json({ message: 'Objet modifié !' }))
-                        .catch(error => res.status(400).json({ error }));
+                        .catch(error => res.status(400).json({ error: 'Impossible de modifier l\'objet' }));
                 });
             });
     } else {
         Sauce.updateOne({ _id: req.params.id }, {...sauceObject, _id: req.params.id })
             .then(() => res.status(200).json({ message: 'Objet modifié !' }))
-            .catch(error => res.status(400).json({ error }));
+            .catch(error => res.status(400).json({ error: 'Impossible de modifier l\'objet' }));
 
     }
 };
@@ -47,16 +47,16 @@ exports.deleteSauce = (req, res, next) => {
             fs.unlink(`images/${filename}`, () => {
                 Sauce.deleteOne({ _id: req.params.id })
                     .then(() => res.status(200).json({ message: 'Objet supprimé !' }))
-                    .catch(error => res.status(400).json({ error }));
+                    .catch(error => res.status(400).json({ error: 'Impossible de supprimer l\'objet !' }));
             });
         })
-        .catch(error => res.status(500).json({ error }));
+        .catch(error => res.status(500).json({ error: 'Impossible de trouver l\'objet !' }));
 };
 
 exports.getOneSauce = (req, res, next) => {
     Sauce.findOne({ _id: req.params.id })
         .then((sauce) => res.status(200).json(sauce))
-        .catch((error) => res.status(404).json({ error: error }));
+        .catch((error) => res.status(404).json({ error: 'Sauce introuvable' }));
 };
 
 exports.getAllSauces = (req, res, next) => {
@@ -66,9 +66,7 @@ exports.getAllSauces = (req, res, next) => {
         }
     ).catch(
         (error) => {
-            res.status(400).json({
-                error: error
-            });
+            res.status(400).json({ error: 'Sauces introuvables' });
         }
     );
 };
@@ -89,7 +87,7 @@ exports.postLike = (req, res, next) => {
                             console.log('Sauce Likée')
                         )
                         .then(() => res.status(200).json({ message: "Sauce Likée" }))
-                        .catch(error => res.status(400).json({ error }));
+                        .catch(error => res.status(400).json({ error: 'Impossible de liker la sauce' }));
                     break;
                     //Si le user dislike la sauce
                 case -1:
@@ -97,7 +95,7 @@ exports.postLike = (req, res, next) => {
                             console.log('Sauce Dislikée')
                         )
                         .then(() => res.status(200).json({ message: "Sauce Dislikée" }))
-                        .catch(error => res.status(400).json({ error }));
+                        .catch(error => res.status(400).json({ error: 'Impossible de disliker la sauce' }));
                     break;
                     //Si le user annule son choix
                 case 0:
@@ -106,14 +104,14 @@ exports.postLike = (req, res, next) => {
                                 console.log('La sauce n\'est plus Likée')
                             )
                             .then(() => res.status(200).json({ message: "Supprime like" }))
-                            .catch(error => res.status(400).json({ error }));
+                            .catch(error => res.status(400).json({ error: 'Impossible d\'annuler le like' }));
                         break;
                     } else if (indexD > -1) { //Si il avait disliké
                         Sauce.updateOne({ _id: req.params.id }, { $pull: { usersDisliked: userId }, $inc: { dislikes: -1 } },
                                 console.log('la sauce n\'est plus Dislikée')
                             )
                             .then(() => res.status(200).json({ message: "Supprime Dislike" }))
-                            .catch(error => res.status(400).json({ error }));
+                            .catch(error => res.status(400).json({ error: 'Impossible d\'annuler le dislike' }));
                         break;
                     }
             }
